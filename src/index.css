@@ -1,1 +1,94 @@
 @import "tailwindcss";
+
+@theme {
+  --color-earth-900: #0a0e1a;
+  --color-earth-800: #111827;
+  --color-earth-700: #1a2332;
+  --color-earth-600: #243044;
+  --color-earth-500: #374151;
+  --color-earth-400: #6b7280;
+  --color-earth-300: #9ca3af;
+  --color-earth-200: #d1d5db;
+  --color-earth-100: #f3f4f6;
+  --color-neon-blue: #00d4ff;
+  --color-neon-green: #00ff88;
+  --color-neon-purple: #a855f7;
+  --color-neon-orange: #ff6b35;
+  --color-neon-red: #ff3366;
+  --color-neon-yellow: #ffd700;
+}
+
+body {
+  background: #0a0e1a;
+  color: #e5e7eb;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #111827;
+}
+::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #4b5563;
+}
+
+/* Glow effects */
+.glow-blue {
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.15), 0 0 40px rgba(0, 212, 255, 0.05);
+}
+.glow-green {
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.15), 0 0 40px rgba(0, 255, 136, 0.05);
+}
+.glow-purple {
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.15), 0 0 40px rgba(168, 85, 247, 0.05);
+}
+
+/* Pulse animation for status indicators */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Grid pattern background */
+.grid-bg {
+  background-image: 
+    linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+/* Orbit animation */
+@keyframes orbit {
+  from { transform: rotate(0deg) translateX(60px) rotate(0deg); }
+  to { transform: rotate(360deg) translateX(60px) rotate(-360deg); }
+}
+.animate-orbit {
+  animation: orbit 20s linear infinite;
+}
+
+@keyframes orbit-reverse {
+  from { transform: rotate(360deg) translateX(40px) rotate(-360deg); }
+  to { transform: rotate(0deg) translateX(40px) rotate(0deg); }
+}
+.animate-orbit-reverse {
+  animation: orbit-reverse 15s linear infinite;
+}
+
+/* Data flow animation */
+@keyframes data-flow {
+  0% { transform: translateY(0); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-100%); opacity: 0; }
+}
