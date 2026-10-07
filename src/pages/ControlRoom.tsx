@@ -1,12 +1,30 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Globe } from '../components/Globe';
+import { LiveEntitiesLayer, SatelliteLayer, EarthquakeLayer, FireDetectionLayer } from '../components/LiveEntitiesLayer';
+import { EntityDetailsPanel } from '../components/EntityDetailsPanel';
 import {
   Globe as GlobeIcon, Layers, Radio, Satellite, Cloud,
   Zap, Shield, Activity, Eye, Settings, ChevronRight,
   ChevronDown, Search, Crosshair, Navigation, Camera,
   Flame, Droplet, Wind, MapPin, Wifi, Truck, Bus
 } from 'lucide-react';
+
+interface LiveEntity {
+  id: string;
+  entity_type: string;
+  provider: string;
+  latitude: number;
+  longitude: number;
+  altitude?: number;
+  heading?: number;
+  speed?: number;
+  observed_at: string;
+  retrieved_at: string;
+  freshness: string;
+  knowledge_state: string;
+  metadata: Record<string, any>;
+}
 
 type Context = 'NEUTRAL' | 'LIVE_CONTACTS' | 'SPACE_MISSIONS' | 'ENVIRONMENTAL' | 'EUROPEAN_SPACE' | 'EARTH_EVENTS';
 type VisualStyle = 'NORMAL' | 'NVG' | 'FLIR' | 'CRT' | 'NOIR';
@@ -24,14 +42,14 @@ interface LayerState {
 
 const initialLayers: LayerState[] = [
   // Movement
-  { id: 'aircraft', name: 'Live Aircraft', icon: <Zap size={14} />, enabled: false, category: 'MOVEMENT', provider: 'OpenSky', status: 'REGISTERED', color: '#00d4ff' },
-  { id: 'military', name: 'Military ADS-B', icon: <Shield size={14} />, enabled: false, category: 'MOVEMENT', provider: 'adsb.lol', status: 'REGISTERED', color: '#ff6b35' },
-  { id: 'vessels', name: 'Live Vessels', icon: <Droplet size={14} />, enabled: false, category: 'MOVEMENT', provider: 'AISStream', status: 'REGISTERED', color: '#00d4ff' },
+  { id: 'aircraft', name: 'Live Aircraft', icon: <Zap size={14} />, enabled: false, category: 'MOVEMENT', provider: 'OpenSky', status: 'PORTED', color: '#00d4ff' },
+  { id: 'military', name: 'Military ADS-B', icon: <Shield size={14} />, enabled: false, category: 'MOVEMENT', provider: 'adsb.lol', status: 'PORTED', color: '#ff6b35' },
+  { id: 'vessels', name: 'Live Vessels', icon: <Droplet size={14} />, enabled: false, category: 'MOVEMENT', provider: 'AISStream', status: 'PORTED', color: '#00d4ff' },
   { id: 'traffic', name: 'Traffic', icon: <Truck size={14} />, enabled: false, category: 'MOVEMENT', provider: 'OSM/TomTom', status: 'REGISTERED', color: '#ffd700' },
   { id: 'transit', name: 'Public Transit', icon: <Bus size={14} />, enabled: false, category: 'MOVEMENT', provider: 'GTFS-RT', status: 'REGISTERED', color: '#00ff88' },
 
   // Orbital
-  { id: 'satellites', name: 'Satellites', icon: <Satellite size={14} />, enabled: true, category: 'ORBITAL', provider: 'CelesTrak', status: 'ACTIVE', color: '#a855f7' },
+  { id: 'satellites', name: 'Satellites', icon: <Satellite size={14} />, enabled: true, category: 'ORBITAL', provider: 'CelesTrak', status: 'PORTED', color: '#a855f7' },
   { id: 'space-missions', name: 'Space Missions', icon: <Rocket size={14} />, enabled: false, category: 'ORBITAL', provider: 'Launch Library 2', status: 'REGISTERED', color: '#ff3366' },
   { id: 'european-missions', name: 'European Missions', icon: <Satellite size={14} />, enabled: true, category: 'ORBITAL', provider: 'European Space Federation', status: 'ACTIVE', color: '#00d4ff' },
 
@@ -40,8 +58,8 @@ const initialLayers: LayerState[] = [
   { id: 'sentinel', name: 'Sentinel', icon: <Satellite size={14} />, enabled: false, category: 'EARTH_OBSERVATION', provider: 'Copernicus', status: 'ACTIVE', color: '#00d4ff' },
 
   // Environment
-  { id: 'earthquakes', name: 'Earthquakes', icon: <Activity size={14} />, enabled: false, category: 'ENVIRONMENT', provider: 'USGS', status: 'REGISTERED', color: '#ff3366' },
-  { id: 'fires', name: 'Active Fires', icon: <Flame size={14} />, enabled: false, category: 'ENVIRONMENT', provider: 'NASA FIRMS', status: 'REGISTERED', color: '#ff6b35' },
+  { id: 'earthquakes', name: 'Earthquakes', icon: <Activity size={14} />, enabled: false, category: 'ENVIRONMENT', provider: 'USGS', status: 'PORTED', color: '#ff3366' },
+  { id: 'fires', name: 'Active Fires', icon: <Flame size={14} />, enabled: false, category: 'ENVIRONMENT', provider: 'NASA FIRMS', status: 'PORTED', color: '#ff6b35' },
   { id: 'fire-perimeters', name: 'Fire Perimeters', icon: <Flame size={14} />, enabled: false, category: 'ENVIRONMENT', provider: 'NIFC', status: 'REGISTERED', color: '#ffd700' },
 
   // Weather
@@ -83,6 +101,10 @@ export function ControlRoomPage() {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['ORBITAL', 'EARTH_OBSERVATION']));
   const [globeCenter, setGlobeCenter] = useState({ lon: 0, lat: 20, height: 15000000 });
   const [showFirstLaunch, setShowFirstLaunch] = useState(true);
+  
+  // Live entity state
+  const [selectedEntity, setSelectedEntity] = useState<LiveEntity | null>(null);
+  const [trackedEntityIds, setTrackedEntityIds] = useState<string[]>([]);
 
   // Apply context presets
   useEffect(() => {
@@ -122,8 +144,86 @@ export function ControlRoomPage() {
     <div className="relative w-full h-full overflow-hidden bg-earth-900">
       {/* 3D Globe */}
       <div className="absolute inset-0">
-        <Globe center={globeCenter} visualStyle={visualStyle} />
+        <Globe center={globeCenter} visualStyle={visualStyle}>
+          {/* Live Entity Layers */}
+          {layers.find(l => l.id === 'aircraft')?.enabled && (
+            <LiveEntitiesLayer
+              entityType="AIRCRAFT"
+              enabled={true}
+              selectedEntityId={selectedEntity?.id}
+              trackedEntityIds={trackedEntityIds}
+              onEntityClick={setSelectedEntity}
+              apiEndpoint="/api/v1/live/aircraft"
+              refreshInterval={30000}
+            />
+          )}
+          
+          {layers.find(l => l.id === 'military')?.enabled && (
+            <LiveEntitiesLayer
+              entityType="MILITARY_AIRCRAFT"
+              enabled={true}
+              selectedEntityId={selectedEntity?.id}
+              trackedEntityIds={trackedEntityIds}
+              onEntityClick={setSelectedEntity}
+              apiEndpoint="/api/v1/live/military-aircraft"
+              refreshInterval={60000}
+            />
+          )}
+          
+          {layers.find(l => l.id === 'vessels')?.enabled && (
+            <LiveEntitiesLayer
+              entityType="VESSEL"
+              enabled={true}
+              selectedEntityId={selectedEntity?.id}
+              trackedEntityIds={trackedEntityIds}
+              onEntityClick={setSelectedEntity}
+              apiEndpoint="/api/v1/live/vessels"
+              refreshInterval={60000}
+            />
+          )}
+          
+          {layers.find(l => l.id === 'satellites')?.enabled && (
+            <SatelliteLayer
+              enabled={true}
+              selectedEntityId={selectedEntity?.id}
+              trackedEntityIds={trackedEntityIds}
+              onEntityClick={setSelectedEntity}
+              refreshInterval={60000}
+            />
+          )}
+          
+          {layers.find(l => l.id === 'earthquakes')?.enabled && (
+            <EarthquakeLayer
+              enabled={true}
+              selectedEntityId={selectedEntity?.id}
+              trackedEntityIds={trackedEntityIds}
+              onEntityClick={setSelectedEntity}
+              apiEndpoint="/api/v1/live/earthquakes"
+              refreshInterval={300000}
+            />
+          )}
+          
+          {layers.find(l => l.id === 'fires')?.enabled && (
+            <FireDetectionLayer
+              enabled={true}
+              selectedEntityId={selectedEntity?.id}
+              trackedEntityIds={trackedEntityIds}
+              onEntityClick={setSelectedEntity}
+              apiEndpoint="/api/v1/live/fires"
+              refreshInterval={600000}
+            />
+          )}
+        </Globe>
       </div>
+
+      {/* Entity Details Panel */}
+      <EntityDetailsPanel
+        entity={selectedEntity}
+        onClose={() => setSelectedEntity(null)}
+        onTrack={(id) => setTrackedEntityIds(prev => [...prev, id])}
+        onUntrack={(id) => setTrackedEntityIds(prev => prev.filter(eid => eid !== id))}
+        isTracked={selectedEntity ? trackedEntityIds.includes(selectedEntity.id) : false}
+      />
 
       {/* First Launch Chooser */}
       <AnimatePresence>

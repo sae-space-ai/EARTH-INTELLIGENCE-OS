@@ -29,19 +29,19 @@ This document maps every discovered upstream capability to Earth Intelligence OS
 ### Live Contacts
 | ID | Upstream Name | Category | Earth OS Target | Status | Notes |
 |----|---------------|----------|-----------------|--------|-------|
-| CONTACT-001 | Live Aircraft (OpenSky) | Movement | Aircraft layer | REGISTERED_ONLY | Provider adapter ready |
-| CONTACT-002 | Military ADS-B (adsb.lol) | Movement | Military aircraft layer | REGISTERED_ONLY | Public lawful source |
-| CONTACT-003 | Live Vessels (AISStream) | Movement | Vessel layer | REGISTERED_ONLY | Provider adapter ready |
+| CONTACT-001 | Live Aircraft (OpenSky) | Movement | Aircraft layer | PORTED | Full implementation with selection/tracking |
+| CONTACT-002 | Military ADS-B (adsb.lol) | Movement | Military aircraft layer | PORTED | Public ADS-B visualization |
+| CONTACT-003 | Live Vessels (AISStream) | Movement | Vessel layer | PORTED | AIS integration with trail support |
 | CONTACT-004 | Cockpit View | Movement | Aircraft cockpit mode | REGISTERED_ONLY | Future: tracked aircraft view |
-| CONTACT-005 | Contact Selection/Tracking | Movement | TrackableEntity system | ADAPTED | Shared entity model |
+| CONTACT-005 | Contact Selection/Tracking | Movement | TrackableEntity system | PORTED | Shared selection/tracking/trails |
 
 ### Orbital
 | ID | Upstream Name | Category | Earth OS Target | Status | Notes |
 |----|---------------|----------|-----------------|--------|-------|
-| ORBIT-001 | Satellite Catalog (CelesTrak) | Orbital | Satellite layer | ADAPTED | Integrated with European Space Federation |
-| ORBIT-002 | SGP4 Propagation | Orbital | Orbital propagation | REGISTERED_ONLY | Future: Phase 1 |
-| ORBIT-003 | Orbit Visualization | Orbital | Orbit lines | REGISTERED_ONLY | Future |
-| ORBIT-004 | Satellite Pass Calculation | Orbital | Pass prediction | REGISTERED_ONLY | Future |
+| ORBIT-001 | Satellite Catalog (CelesTrak) | Orbital | Satellite layer | PORTED | TLE parsing, SGP4 propagation, orbit visualization |
+| ORBIT-002 | SGP4 Propagation | Orbital | Orbital propagation | PORTED | Simplified SGP4 implementation |
+| ORBIT-003 | Orbit Visualization | Orbital | Orbit lines | PORTED | Trail rendering for tracked satellites |
+| ORBIT-004 | Satellite Pass Calculation | Orbital | Pass prediction | REGISTERED_ONLY | Future: full pass prediction |
 | ORBIT-005 | Space Missions (Launch Library 2) | Orbital | Launch/mission layer | REGISTERED_ONLY | Provider registered |
 
 ### European Space
@@ -59,8 +59,8 @@ This document maps every discovered upstream capability to Earth Intelligence OS
 ### Environment
 | ID | Upstream Name | Category | Earth OS Target | Status | Notes |
 |----|---------------|----------|-----------------|--------|-------|
-| ENV-001 | Earthquakes (USGS) | Environment | Earthquake layer | REGISTERED_ONLY | Provider adapter ready |
-| ENV-002 | Active Fires (NASA FIRMS) | Environment | Fire detection layer | REGISTERED_ONLY | Provider registered |
+| ENV-001 | Earthquakes (USGS) | Environment | Earthquake layer | PORTED | Full implementation with magnitude/depth filtering |
+| ENV-002 | Active Fires (NASA FIRMS) | Environment | Fire detection layer | PORTED | VIIRS/MODIS fire detections with confidence/FRP |
 | ENV-003 | Fire Perimeters (NIFC) | Environment | Fire perimeter layer | REGISTERED_ONLY | Provider registered |
 
 ### Weather
@@ -130,10 +130,10 @@ This document maps every discovered upstream capability to Earth Intelligence OS
 
 | Status | Count |
 |--------|-------|
-| PORTED | 11 |
-| ADAPTED | 7 |
+| PORTED | 20 |
+| ADAPTED | 5 |
 | SUPERSEDED | 0 |
-| REGISTERED_ONLY | 42 |
+| REGISTERED_ONLY | 33 |
 | BLOCKED_LICENSE | 1 |
 | BLOCKED_PROVIDER | 0 |
 | BLOCKED_SAFETY | 0 |
@@ -158,7 +158,7 @@ Phase 0D focuses on:
 2. ✓ European Space Federation integration
 3. ✓ Provider adapter architecture
 4. ✓ Capability parity documentation
-5. Future: Live data layers (aircraft, vessels, satellites)
-6. Future: Weather layers
-7. Future: Camera layers
+5. ✓ Live data layers (aircraft, vessels, satellites, earthquakes, fires) - Phase 0D.1
+6. Future: Weather layers - Phase 0D.2
+7. Future: Camera layers - Phase 0D.3
 8. Future: Full Ask Earth / MCP integration
