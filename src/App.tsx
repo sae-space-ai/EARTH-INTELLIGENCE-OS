@@ -16,6 +16,7 @@ import { RoadmapPage } from './pages/Roadmap';
 import { SecurityPage } from './pages/Security';
 import { PipelinePage } from './pages/Pipeline';
 import { KnowledgePage } from './pages/Knowledge';
+import { ControlRoomPage } from './pages/ControlRoom';
 
 interface NavItem {
   id: string;
@@ -25,20 +26,21 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { id: 'dashboard', label: 'Control Room', icon: <LayoutDashboard size={18} />, color: '#00d4ff' },
-  { id: 'architecture', label: 'Architecture', icon: <GitBranch size={18} />, color: '#00ff88' },
-  { id: 'domains', label: 'Domains', icon: <Globe size={18} />, color: '#a855f7' },
-  { id: 'pipeline', label: 'Pipeline', icon: <Activity size={18} />, color: '#ff6b35' },
-  { id: 'events', label: 'Event Bus', icon: <Radio size={18} />, color: '#ffd700' },
+  { id: 'control-room', label: 'Control Room', icon: <LayoutDashboard size={18} />, color: '#00d4ff' },
+  { id: 'dashboard', label: 'Overview', icon: <Globe size={18} />, color: '#00ff88' },
+  { id: 'architecture', label: 'Architecture', icon: <GitBranch size={18} />, color: '#a855f7' },
+  { id: 'domains', label: 'Domains', icon: <Globe size={18} />, color: '#ff6b35' },
+  { id: 'pipeline', label: 'Pipeline', icon: <Activity size={18} />, color: '#ffd700' },
+  { id: 'events', label: 'Event Bus', icon: <Radio size={18} />, color: '#00d4ff' },
   { id: 'knowledge', label: 'Knowledge', icon: <Brain size={18} />, color: '#06b6d4' },
-  { id: 'api', label: 'API', icon: <Server size={18} />, color: '#00d4ff' },
-  { id: 'adrs', label: 'ADRs', icon: <BookOpen size={18} />, color: '#00ff88' },
+  { id: 'api', label: 'API', icon: <Server size={18} />, color: '#00ff88' },
+  { id: 'adrs', label: 'ADRs', icon: <BookOpen size={18} />, color: '#a855f7' },
   { id: 'security', label: 'Security', icon: <Shield size={18} />, color: '#ff3366' },
-  { id: 'roadmap', label: 'Roadmap', icon: <Map size={18} />, color: '#a855f7' },
+  { id: 'roadmap', label: 'Roadmap', icon: <Map size={18} />, color: '#ffd700' },
 ];
 
 export default function App() {
-  const [activePage, setActivePage] = useState('dashboard');
+  const [activePage, setActivePage] = useState('control-room');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -49,6 +51,7 @@ export default function App() {
 
   const renderPage = () => {
     switch (activePage) {
+      case 'control-room': return <ControlRoomPage />;
       case 'dashboard': return <Dashboard />;
       case 'architecture': return <ArchitecturePage />;
       case 'domains': return <DomainsPage />;
@@ -59,13 +62,16 @@ export default function App() {
       case 'adrs': return <ADRsPage />;
       case 'security': return <SecurityPage />;
       case 'roadmap': return <RoadmapPage />;
-      default: return <Dashboard />;
+      default: return <ControlRoomPage />;
     }
   };
 
+  const isControlRoom = activePage === 'control-room';
+
   return (
     <div className="flex h-screen overflow-hidden bg-earth-900">
-      {/* Sidebar */}
+      {/* Sidebar - hidden in Control Room */}
+      {!isControlRoom && (
       <motion.aside
         initial={false}
         animate={{ width: sidebarOpen ? 240 : 64 }}
@@ -152,33 +158,36 @@ export default function App() {
           {sidebarOpen ? <ChevronRight size={12} /> : <Menu size={12} />}
         </button>
       </motion.aside>
+      )}
 
       {/* Main content */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Top bar */}
-        <header className="flex items-center justify-between px-6 py-3 border-b border-earth-600/50 bg-earth-800/50 backdrop-blur-sm">
-          <div className="flex items-center gap-4">
-            <h2 className="text-lg font-semibold text-white">
-              {navItems.find(n => n.id === activePage)?.label || 'Control Room'}
-            </h2>
-            <span className="px-2 py-0.5 text-[10px] font-mono rounded-full bg-neon-blue/10 text-neon-blue border border-neon-blue/20">
-              PHASE 0
-            </span>
-          </div>
-          <div className="flex items-center gap-4 text-xs text-earth-400 font-mono">
-            <span className="flex items-center gap-1.5">
-              <Clock size={12} />
-              {currentTime.toISOString().replace('T', ' ').slice(0, 19)} UTC
-            </span>
-            <span className="flex items-center gap-1.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-neon-green" />
-              ALL SYSTEMS NOMINAL
-            </span>
-          </div>
-        </header>
+        {/* Top bar - hidden in Control Room */}
+        {!isControlRoom && (
+          <header className="flex items-center justify-between px-6 py-3 border-b border-earth-600/50 bg-earth-800/50 backdrop-blur-sm">
+            <div className="flex items-center gap-4">
+              <h2 className="text-lg font-semibold text-white">
+                {navItems.find(n => n.id === activePage)?.label || 'Control Room'}
+              </h2>
+              <span className="px-2 py-0.5 text-[10px] font-mono rounded-full bg-neon-blue/10 text-neon-blue border border-neon-blue/20">
+                PHASE 0D
+              </span>
+            </div>
+            <div className="flex items-center gap-4 text-xs text-earth-400 font-mono">
+              <span className="flex items-center gap-1.5">
+                <Clock size={12} />
+                {currentTime.toISOString().replace('T', ' ').slice(0, 19)} UTC
+              </span>
+              <span className="flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-neon-green" />
+                ALL SYSTEMS NOMINAL
+              </span>
+            </div>
+          </header>
+        )}
 
         {/* Page content */}
-        <div className="flex-1 overflow-y-auto grid-bg">
+        <div className={`flex-1 overflow-y-auto ${isControlRoom ? '' : 'grid-bg'}`}>
           <AnimatePresence mode="wait">
             <motion.div
               key={activePage}
@@ -186,7 +195,7 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
-              className="p-6"
+              className={isControlRoom ? 'h-full' : 'p-6'}
             >
               {renderPage()}
             </motion.div>
