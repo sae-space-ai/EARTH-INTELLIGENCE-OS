@@ -9,6 +9,8 @@ from packages.live.models import (
     SatelliteEntity, EarthquakeEntity, FireDetectionEntity,
     FreshnessState, KnowledgeState, EntityType
 )
+from packages.orbital.tle_parser import TLEParser, TLE
+from packages.orbital.propagation import SatellitePropagator
 
 
 class ProviderHealthState:
@@ -296,115 +298,51 @@ class SatelliteProvider(BaseProvider):
             return []
     
     def normalize(self, raw_data: str) -> list[SatelliteEntity]:
-        """Normalize TLE data to SatelliteEntity with SGP4 propagation."""
-        # Parse TLE format (3 lines per satellite: name, line1, line2)
-        lines = raw_data.strip().split('\n')
+        """Normalize TLE data to SatelliteEntity with real SGP4 propagation."""
+        # Parse TLE format using TLEParser
+        tles = TLEParser.parse(raw_data)
         entities = []
         
-        for i in range(0, len(lines) - 2, 3):
-            if i + 2 >= len(lines):
-                break
-            
-            name = lines[i].strip()
-            line1 = lines[i + 1].strip()
-            line2 = lines[i + 2].strip()
-            
-            # Validate TLE format
-            if not line1.startswith('1 ') or not line2.startswith('2 '):
-                continue
-            
+        for tle in tles:
             try:
-                # Parse epoch from line 1 (columns 19-32)
-                epoch_str = line1[18:32].strip()
-                epoch_year = int(epoch_str[:2])
-                epoch_day = float(epoch_str[2:])
+                # Create propagator with real SGP4
+                propagator = SatellitePropagator(tle)
                 
-                # Convert to datetime
-                if epoch_year < 57:
-                    year = 2000 + epoch_year
-                else:
-                    year = 1900 + epoch_year
+                # Propagate to current time
+                position = propagator.propagate()
                 
-                epoch = datetime(year, 1, 1) + timedelta(days=epoch_day - 1)
-                
-                # Parse NORAD ID from line 1 (columns 3-7)
-                norad_id = int(line1[2:7].strip())
-                
-                # Parse orbital elements from line 2
-                inclination = float(line2[8:16].strip())
-                raan = float(line2[17:25].strip())
-                eccentricity = float('0.' + line2[26:33].strip())
-                arg_perigee = float(line2[34:42].strip())
-                mean_anomaly = float(line2[43:51].strip())
-                mean_motion = float(line2[52:63].strip())  # revolutions per day
-                
-                # Calculate current position using simplified SGP4
-                # For full SGP4, would use sgp4 library
-                lat, lon, alt = self._propagate_position(
-                    inclination, raan, eccentricity, arg_perigee, 
-                    mean_anomaly, mean_motion, epoch
-                )
-                
-                # Determine orbit class from mean motion
-                if mean_motion > 11:
-                    orbit_class = "LEO"
-                elif mean_motion > 2:
-                    orbit_class = "MEO"
-                else:
-                    orbit_class = "GEO"
+                # Determine orbit type
+                orbit_class = propagator.orbit_type
                 
                 entity = SatelliteEntity(
                     entity_type=EntityType.SATELLITE,
                     provider=self.name,
-                    latitude=lat,
-                    longitude=lon,
-                    altitude=alt * 1000,  # Convert km to m
-                    observed_at=datetime.utcnow(),
-                    norad_id=norad_id,
-                    name=name,
+                    latitude=position['latitude_deg'],
+                    longitude=position['longitude_deg'],
+                    altitude=position['altitude_m'],
+                    observed_at=position['datetime'],
+                    norad_id=tle.norad_id,
+                    name=tle.name,
                     orbit_class=orbit_class,
-                    element_epoch=epoch,
+                    element_epoch=tle.epoch_datetime,
                     orbital_elements_source="CelesTrak TLE",
                     is_propagated=True,
-                    knowledge_state=KnowledgeState.INFERRED
+                    knowledge_state=KnowledgeState.INFERRED,
+                    metadata={
+                        'mean_motion': tle.mean_motion,
+                        'inclination': tle.inclination,
+                        'eccentricity': tle.eccentricity,
+                        'orbital_period_minutes': propagator.orbital_period_minutes,
+                    }
                 )
                 entity.freshness = entity.calculate_freshness()
                 entities.append(entity)
                 
-            except (ValueError, IndexError) as e:
-                # Skip malformed TLE entries
+            except Exception as e:
+                # Skip propagation errors
                 continue
         
         return entities
-    
-    def _propagate_position(self, inc: float, raan: float, ecc: float, 
-                           argp: float, ma: float, n: float, 
-                           epoch: datetime) -> tuple[float, float, float]:
-        """Simplified position propagation (placeholder for full SGP4)."""
-        # This is a simplified calculation - real implementation should use sgp4 library
-        # For now, return approximate position based on orbital elements
-        
-        import math
-        
-        # Time since epoch in minutes
-        dt_minutes = (datetime.utcnow() - epoch).total_seconds() / 60
-        
-        # Mean anomaly at current time
-        current_ma = ma + (360 * n * dt_minutes / 1440)  # degrees
-        current_ma = current_ma % 360
-        
-        # Simplified position calculation (circular orbit approximation)
-        # Real SGP4 would be much more complex
-        lat = inc * math.sin(math.radians(current_ma))
-        lon = (raan + argp + current_ma - 360 * dt_minutes / 1440) % 360
-        if lon > 180:
-            lon -= 360
-        
-        # Approximate altitude from mean motion (very rough)
-        # Real calculation would use orbital mechanics
-        alt = 700 if n > 11 else (2000 if n > 2 else 35786)
-        
-        return lat, lon, alt
 
 
 class EarthquakeProvider(BaseProvider):

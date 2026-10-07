@@ -22,6 +22,7 @@
     "react-router-dom": "^6.8.0",
     "recharts": "^2.10.0",
     "resium": "^1.27.0",
+    "sgp4": "^1.0.10",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
