@@ -71,6 +71,20 @@ make check   # Runs: ruff check, ruff format --check, mypy, pytest
 - AI CANNOT send commands to spacecraft.
 - Hard network/policy boundary enforced.
 
+## EUROPEAN SPACE FEDERATION
+The platform federates European space infrastructure:
+- Copernicus CDSE (STAC search implemented)
+- ESA Earth Observation
+- EUMETSAT
+- Destination Earth
+- Galileo / EGNOS
+- ESA Space Weather
+- EU SST / ESA Space Safety
+
+Provider-neutral architecture with connector interface.
+Access policies enforced (OPEN, RESTRICTED, COMMERCIAL, etc.).
+No unauthorized access to restricted data.
+
 ## DEFINITION OF DONE
 - Code exists and imports resolve.
 - Configuration loads correctly.

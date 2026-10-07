@@ -63,6 +63,36 @@ class Settings(BaseSettings):
         description="OpenTelemetry OTLP exporter endpoint",
     )
 
+    # European Space Federation (optional credentials)
+    cdse_client_id: Optional[str] = Field(
+        default=None,
+        description="Copernicus Data Space Ecosystem client ID",
+    )
+    cdse_client_secret: Optional[str] = Field(
+        default=None,
+        description="Copernicus Data Space Ecosystem client secret",
+    )
+    eumetsat_consumer_key: Optional[str] = Field(
+        default=None,
+        description="EUMETSAT API consumer key",
+    )
+    eumetsat_consumer_secret: Optional[str] = Field(
+        default=None,
+        description="EUMETSAT API consumer secret",
+    )
+    destine_client_id: Optional[str] = Field(
+        default=None,
+        description="Destination Earth client ID",
+    )
+    destine_client_secret: Optional[str] = Field(
+        default=None,
+        description="Destination Earth client secret",
+    )
+    esa_swe_api_key: Optional[str] = Field(
+        default=None,
+        description="ESA Space Weather API key",
+    )
+
     @field_validator("log_level")
     @classmethod
     def validate_log_level(cls, v: str) -> str:

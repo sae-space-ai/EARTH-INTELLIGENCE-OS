@@ -9,7 +9,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from apps.api.middleware import TraceMiddleware
-from apps.api.routes import health, satellites, sensors, observations, events, missions
+from apps.api.routes import health, satellites, sensors, observations, events, missions, federation
 from packages.core.config import get_settings
 from packages.core.logging import setup_logging
 
@@ -42,6 +42,7 @@ def create_app() -> FastAPI:
     application.include_router(observations.router, prefix="/api/v1", tags=["Observations"])
     application.include_router(events.router, prefix="/api/v1", tags=["Events"])
     application.include_router(missions.router, prefix="/api/v1", tags=["Missions"])
+    application.include_router(federation.router, prefix="/api/v1", tags=["Federation"])
 
     # Global exception handler
     @application.exception_handler(Exception)
