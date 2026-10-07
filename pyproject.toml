@@ -1,6 +1,6 @@
 [project]
 name = "earth-intelligence-os"
-version = "0.1.0"
+version = "0.1.0-rc1"
 description = "Planetary-scale Earth intelligence platform"
 requires-python = ">=3.11"
 dependencies = [
@@ -18,6 +18,7 @@ dependencies = [
     "confluent-kafka>=2.3.0,<3.0.0",
     "python-json-logger>=2.0.0,<3.0.0",
     "httpx>=0.27.0,<1.0.0",
+    "sgp4>=2.22,<3.0.0",
 ]
 
 [project.optional-dependencies]

@@ -1,4 +1,4 @@
-.PHONY: install format lint typecheck test test-unit test-integration compose-up compose-down migrate api worker check clean
+.PHONY: install format lint typecheck test test-unit test-integration compose-up compose-down migrate api worker check clean up down logs demo smoke-test rc1-test
 
 # Installation
 install:
@@ -55,3 +55,39 @@ clean:
 	find . -type d -name .mypy_cache -exec rm -rf {} +
 	find . -type d -name htmlcov -exec rm -rf {} +
 	rm -rf dist build .eggs *.egg-info
+
+# RC1 Commands
+up:
+	docker compose up --build -d
+
+down:
+	docker compose down
+
+logs:
+	docker compose logs -f
+
+demo:
+	@echo "Enabling demo mode..."
+	@curl -s -X POST http://localhost:8000/api/v1/live/demo/enable
+	@echo ""
+	@echo "Demo mode enabled. Open http://localhost:3000"
+
+smoke-test:
+	@chmod +x scripts/rc1-smoke-test.sh
+	@./scripts/rc1-smoke-test.sh
+
+rc1-test:
+	@echo "Running RC1 validation..."
+	@echo ""
+	@echo "1. Building containers..."
+	@docker compose build
+	@echo ""
+	@echo "2. Starting services..."
+	@docker compose up -d
+	@echo ""
+	@echo "3. Waiting for services to be healthy..."
+	@sleep 10
+	@echo ""
+	@echo "4. Running smoke tests..."
+	@chmod +x scripts/rc1-smoke-test.sh
+	@./scripts/rc1-smoke-test.sh

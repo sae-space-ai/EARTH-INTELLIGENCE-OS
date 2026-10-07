@@ -343,6 +343,38 @@ class SatelliteProvider(BaseProvider):
                 continue
         
         return entities
+    
+    async def fetch_tle_for_satellite(self, norad_id: int) -> Optional[str]:
+        """Fetch TLE data for a specific satellite by NORAD ID."""
+        # CelesTrak provides individual satellite TLE by NORAD ID
+        # Format: https://celestrak.org/pub/TLE/groups/{group}.txt
+        # We'll search through common groups
+        
+        groups = ["stations", "weather", "noaa", "goes", "resource", "sarsat", 
+                  "dmc", "tdrs", "argos", "planet", "spire", "geo", "geodetic",
+                  "engineering", "science", "tes", "gps-ops", "glo-ops", "galileo",
+                  "beidou", "satellite", "intelsat", "ses", "iridium", "iridium-NEXT",
+                  "starlink", "orbcomm", "globalstar", "swarm", "amateur", "x-comm",
+                  "other-comm", "gorizont", "raduga", "molniya", "gnss", "sgsat",
+                  "tle-new", "military", "radar", "cubesat", "other"]
+        
+        for group in groups:
+            try:
+                url = f"{self.base_url}/pub/TLE/{group}.txt"
+                async with httpx.AsyncClient(timeout=10.0) as client:
+                    response = await client.get(url)
+                    response.raise_for_status()
+                    
+                    # Parse TLEs and look for matching NORAD ID
+                    tles = TLEParser.parse(response.text)
+                    for tle in tles:
+                        if tle.norad_id == norad_id:
+                            # Return the 3-line format
+                            return f"{tle.name}\n{tle.line1}\n{tle.line2}"
+            except Exception:
+                continue
+        
+        return None
 
 
 class EarthquakeProvider(BaseProvider):
