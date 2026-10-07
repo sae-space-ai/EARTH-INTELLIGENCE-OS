@@ -17,6 +17,8 @@ import { SecurityPage } from './pages/Security';
 import { PipelinePage } from './pages/Pipeline';
 import { KnowledgePage } from './pages/Knowledge';
 import { ControlRoomPage } from './pages/ControlRoom';
+import { AILabPage } from './pages/AILab';
+import { AICommandConsole } from './components/AICommandConsole';
 
 interface NavItem {
   id: string;
@@ -27,6 +29,8 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { id: 'control-room', label: 'Control Room', icon: <LayoutDashboard size={18} />, color: '#00d4ff' },
+  { id: 'ai-lab', label: 'AI Lab', icon: <Brain size={18} />, color: '#a855f7' },
+  { id: 'ai-command', label: 'AI Command', icon: <Zap size={18} />, color: '#ff6b35' },
   { id: 'dashboard', label: 'Overview', icon: <Globe size={18} />, color: '#00ff88' },
   { id: 'architecture', label: 'Architecture', icon: <GitBranch size={18} />, color: '#a855f7' },
   { id: 'domains', label: 'Domains', icon: <Globe size={18} />, color: '#ff6b35' },
@@ -52,6 +56,8 @@ export default function App() {
   const renderPage = () => {
     switch (activePage) {
       case 'control-room': return <ControlRoomPage />;
+      case 'ai-lab': return <AILabPage />;
+      case 'ai-command': return <AICommandConsole />;
       case 'dashboard': return <Dashboard />;
       case 'architecture': return <ArchitecturePage />;
       case 'domains': return <DomainsPage />;
